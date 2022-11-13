@@ -2,6 +2,8 @@
 
 This repository provides a set of evidences that the original procedure proposed in [Trapp et al.](https://www.nature.com/articles/s43587-021-00134-3) for inference epigenetic age in single cell methylation data contains mistakes and generates wrong results. I specifically considered one of the most strange results which is called "ground zero", i.e. achieving the global minimum in epigenetic age during embryogenesis. I show that the ground zero is actually an artifact of the inherently wrong procedure of maximum likelihood estimation (MLE) proposed by the authors. In short, authors proposed to find polynomial likelihood function by applying brute force algorithm manually defined interval of search while the global solution can be found. I show the global solution for MLE problem provides other results than the authors proposed in their paper. The concrete procedure is provided in the notebook `proof`.
 
+![abstract](figures/scAge-fake-abstract.png)
+
 # Mathematical formulation
 
 Problem of **single cell** age inference is reduced to the maximum likelihood estimation problem, namely:
@@ -25,10 +27,12 @@ The objective (3) is not a whole procedure of cell age inference. Two problems h
 2. The probabilites are not conditioned by the concrete single cell methylation profile.
 
 For the first problem authors proposed to bound a linear function by a manually predetermined constants, e.g.:
-\begin{align*} 
-    if\ p \geq 1 \rightarrow p = 1 - \epsilon \\
-    if\ p \leq 0 \rightarrow p = \epsilon 
-\end{align*}
+\begin{equation*}
+    \begin{align*} 
+        if\ p \geq 1 \rightarrow p = 1 - \epsilon \\
+        if\ p \leq 0 \rightarrow p = \epsilon 
+    \end{align*}
+\end{equation*}
 where $\epsilon$ is small constant typically equal to $0.001$. This bounding generates one of the main **problem** with the whole procedure which we discuss below in details within this notebook.
 
 For the second problem authors proposed to use the following conditioning on single cell methylation profile for the probabilities by modifying equation (2):
@@ -37,7 +41,8 @@ $$ p_i(y) = p_i(y|b_i, w_i, CpG_i) = p_i^{CpG_i}(1-p_i)^{1-CpG_i} =
 \begin{bmatrix}
 w_{i}y + b_i, |\ CpG_i = 1 \\
 -w_{i}y + (1-b_i), |\  CpG_i = 0
-\end{bmatrix} \tag{4}$$
+\end{bmatrix} 
+\tag{4}$$
 
 where $CpG_i$ can take values from ${0, 1}$ based on the actual observation of single cell methylation data. The idea of the preconditionin is just to consider a probability of inverse event if zero value of methylation was observed in data. By substitution the expression (4) to the objective (1) one can observe that for each concrete cell the problem is reduced to the finding a maximum of polynomial function on the interval:
 
