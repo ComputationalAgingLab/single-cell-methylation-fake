@@ -8,7 +8,7 @@ This repository provides a set of evidences that the original procedure proposed
 
 Problem of **single cell** age inference is reduced to the maximum likelihood estimation problem, namely:
 
-$$ y^* = \argmax_y \prod_{i=1}^n p_i(y) \tag{1}$$
+$$ y^* = \underset{y}{\operatorname{\argmax}} \prod_{i=1}^n p_i(y) \tag{1}$$
 
 where $y$ - sought cell age and $y^*$ - optimal cell age correspondingy; $p_i(y)$ - probability of $i$-th CpG site to be methylated; $n$ - total number of sites. Authors proposed to use a concrete functional form for the probabilities:
 
@@ -16,11 +16,11 @@ $$ p_i(y) = p_i(y|b_i, w_i) = w_{i}y + b_i \tag{2}$$
 
 the weight $w_i$ and bias $b_i$ are taken from a reference bulk dataset. Importantly these weights and biases are not the result of ElasticNet model fitting to predict age but Linear Regression model was fitted for each site separately. Specifically, for each $i$-th methylation site having methylation value $x_i \in [0,1]$ the following problem was solved:
 
-$$ w_i,b_i = \argmin_{w, b} ||x_i - wy - b||_2$$
+$$ w_i,b_i = \underset{w, b}{\operatorname{\argmin}} ||x_i - wy - b||_2$$
 
 Thus, weights and biases, obtained after multiple regression models fitting on bulk dataset, were applied to predict cell age in the single cell dataset. Combining the equations (1) and (2) have:
 
-$$ y^* = \argmax_y \prod_{i=1}^n (w_{i}y + b_i) \tag{3}$$
+$$ y^* = \underset{y}{\operatorname{\argmax}} \prod_{i=1}^n (w_{i}y + b_i) \tag{3}$$
 
 The objective (3) is not a whole procedure of cell age inference. Two problems have to be resolved before: 
 1. Probability values are not bounded in the proposed linear function approximation;
@@ -33,7 +33,7 @@ For the first problem authors proposed to bound a linear function by a manually 
         if\ p \leq 0 \rightarrow p = \epsilon 
     \end{align*}
 \end{equation*}
-where $\epsilon$ is small constant typically equal to $0.001$. This bounding generates one of the main **problem** with the whole procedure which we discuss below in details within this notebook.
+where $\epsilon$ is small constant typically equal to $0.001$. It worth to say that such bounding do not preserve the property of PDF to be integrated in $1$ across support. This bounding also generates one additional **problem** with the whole procedure which we discuss below in details within this notebook.
 
 For the second problem authors proposed to use the following conditioning on single cell methylation profile for the probabilities by modifying equation (2):
 
@@ -46,7 +46,7 @@ w_{i}y + b_i, |\ CpG_i = 1 \\
 
 where $CpG_i$ can take values from ${0, 1}$ based on the actual observation of single cell methylation data. The idea of the preconditionin is just to consider a probability of inverse event if zero value of methylation was observed in data. By substitution the expression (4) to the objective (1) one can observe that for each concrete cell the problem is reduced to the finding a maximum of polynomial function on the interval:
 
-$$ y^* = \argmax_{y\in [y_{min}, y_{max}]} \prod_{i=1}^n p_i(y|CpG) = 
+$$ y^* = \underset{y\in [y_{min}, y_{max}]}{\operatorname{\argmax}} \prod_{i=1}^n p_i(y|CpG) = 
         (w_{1}y + b_1)(-w_{2}y + (1-b_2))\cdots (w_{n}y + b_n); for\ CpG = [1,0,...1]
 \tag{5}$$
 
