@@ -1,0 +1,3 @@
+reformulate problem as a mixture of bernoulli distributions:
+https://stats.stackexchange.com/questions/275380/maximum-likelihood-estimation-for-bernoulli-distribution
+
