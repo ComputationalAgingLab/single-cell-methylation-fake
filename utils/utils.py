@@ -2,6 +2,7 @@
 from matplotlib import pyplot as plt
 from scipy.optimize import fsolve
 import numpy as np
+import torch
 
 def plot_root_intervals(w, b, interval_of_search=(-20, 60), eps=0.01):
     """
@@ -111,3 +112,16 @@ def get_max(w, b, domain=None, verbose=0, proper_interval=True):
         else:
             pass
     return solution
+
+
+class BetaModel(torch.nn.Module):
+    def __init__(self, w, b, t0):
+        super(BetaModel, self).__init__()
+        self.w = w
+        self.b = b
+        self.t = torch.nn.Parameter(t0, requires_grad=True)
+        self.logsigm = torch.nn.LogSigmoid() 
+
+    def forward(self, c):
+        g = self.w * self.t + self.b
+        return (c * self.logsigm(g) + (1 - c) * self.logsigm(1 - g))

@@ -8,6 +8,7 @@ __pycache__/
 
 #data folders
 cell_data/
+clock_data/
 
 # Distribution / packaging
 .Python
