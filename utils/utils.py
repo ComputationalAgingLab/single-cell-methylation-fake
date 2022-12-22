@@ -1,18 +1,29 @@
 # additional functions
 from matplotlib import pyplot as plt
+import seaborn as sns
+from statannot import add_stat_annotation
 from scipy.optimize import fsolve
 import numpy as np
 import torch
+
+
+def get_proper_intervals(w, b):
+    """
+    Accept weights and biases and returns 2d array of intervals
+    where methylation probability is not out of [0, 1].
+    """
+    return np.array([[-bi/wi if -bi/wi < (1-bi)/wi else (1-bi)/wi for bi, wi in zip(b, w)], 
+                     [(1-bi)/wi if -bi/wi < (1-bi)/wi else -bi/wi for bi, wi in zip(b, w)],]).T
 
 def plot_root_intervals(w, b, interval_of_search=(-20, 60), eps=0.01):
     """
     This function plots intervals of ages where monomials do not exceed probability interval. 
     eps = 0.01 - small constant to not touch to the interval boundaries where p=0 or p=1
     """
-    x_intervals = np.array([[-bi/wi if -bi/wi < (1-bi)/wi else (1-bi)/wi for bi, wi in zip(b, w)], 
-                            [(1-bi)/wi if -bi/wi < (1-bi)/wi else -bi/wi for bi, wi in zip(b, w)],]).T
-    sorted_intervals = x_intervals[np.argsort(x_intervals[:, 0])]
-    interval_of_search_corrected = (x_intervals[:, 0].max() + eps, x_intervals[:, 1].min() - eps)
+    proper_intervals = get_proper_intervals(w, b)
+
+    sorted_intervals = proper_intervals[np.argsort(proper_intervals[:, 0])]
+    interval_of_search_corrected = (proper_intervals[:, 0].max() + eps, proper_intervals[:, 1].min() - eps)
     print('Corrected interval:', interval_of_search_corrected)
 
     x = np.linspace(interval_of_search[0], interval_of_search[1], 100)
@@ -55,6 +66,29 @@ def plot_root_intervals(w, b, interval_of_search=(-20, 60), eps=0.01):
     axes[3].set_xlabel('Age');
     plt.tight_layout()
     plt.show()
+
+def plot_predictions(data, box_pairs):
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+    axes[0].axhline(0, ls='--', color='grey', lw=1.5)
+    sns.violinplot(x='Stage', y='Ages', data=data, ax=axes[0])
+    sns.stripplot(x='Stage', y='Ages', data=data, ax=axes[0], color='black')
+    test_results = add_stat_annotation(axes[0], data=data, x='Stage', y='Ages',
+                                    box_pairs=box_pairs,
+                                    test='Mann-Whitney', text_format='star',
+                                    loc='outside', verbose=1)
+
+    axes[0].set_xlabel('')
+    axes[0].set_ylabel('Predicted ages', fontsize=14);
+
+    sns.stripplot(x='Stage', y='n_sites', data=data, ax=axes[1], color='black')
+    sns.boxplot(x='Stage', y='n_sites', data=data, ax=axes[1])
+    axes[1].set_xlabel('')
+    axes[1].set_ylabel('N sites ', fontsize=14);
+
+    sns.violinplot(x='Stage', y='p_empiric', data=data, ax=axes[2])
+    sns.stripplot(x='Stage', y='p_empiric', data=data, ax=axes[2], color='black')
+    axes[2].set_xlabel('')
+    axes[2].set_ylabel('P empirical', fontsize=14);
 
 
 def get_max(w, b, domain=None, verbose=0, proper_interval=True):
